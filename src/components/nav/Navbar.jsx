@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 
 const Navbar = (props) => {
@@ -28,7 +28,8 @@ const Navbar = (props) => {
     } 
 
     return (
-        <nav className={`w-full py-4 px-4 flex justify-between items-center shadow-md shadow-slate-100 fixed top-0 md:px-8 lg:px-12`}>
+        <Fragment>
+            <nav className={`bg-white w-full py-4 px-4 flex justify-between items-center shadow-md shadow-slate-100 fixed z-[6] top-0 md:px-8 lg:px-12`}>
             <div className={`flex items-center gap-x-10`}>
                 {/* logo */}
                     <Link to='/' className={`font-poppins font-bold mt-1`}>DUDI TKJ SMKN 1 NATAL</Link>
@@ -51,29 +52,30 @@ const Navbar = (props) => {
                     <span className={`bg-black w-1 h-1 rounded-full`}></span>
                     <span className={`bg-black w-1 h-1 rounded-full`}></span>
                 </div>
-            </div>
+            </div>            
+        </nav>
 
-            {/* show nav list mobile */}
+        {/* show nav list mobile */}
             <div className={`bg-[#0000009a] ${displayNavMobile} fixed z-20 top-0 right-0 bottom-0 left-0`}>
-                <div className={`w-full h-full relative`}>
-                    {/* close nav list mobile */}
-                    <div onClick={closeNavList} className={`w-full h-full absolute z-10`}></div>
-                    
-                    {/* list nav mobile */}
-                    <div className={`w-full px-4 absolute z-20 bottom-4 duration-300 ${translateLisNav} ${opacityLisNav}`}>
-                        <div className={`bg-white rounded-xl overflow-hidden sm-430:w-[328px] sm-430:mx-auto`}>
-                            <div className={`w-full flex justify-center py-3 font-bold border-b border-slate-300`}>Menu</div>
+            <div className={`w-full h-full relative`}>
+                {/* close nav list mobile */}
+                <div onClick={closeNavList} className={`w-full h-full absolute z-10`}></div>
+                
+                {/* list nav mobile */}
+                <div className={`w-full px-4 absolute z-20 bottom-4 duration-300 ${translateLisNav} ${opacityLisNav}`}>
+                    <div className={`bg-white rounded-xl overflow-hidden sm-430:w-[328px] sm-430:mx-auto`}>
+                        <div className={`w-full flex justify-center py-3 font-bold border-b border-slate-300`}>Menu</div>
 
-                            <div className={`my-3`}>
-                                <Link to='/' className={`w-full flex justify-center py-2 text-zinc-500 font-bold`}>Home</Link>
-                                <Link to='/' className={`w-full flex justify-center py-2 text-zinc-500 font-bold`}>Paket Layanan</Link>
-                                <Link to='/' className={`w-full flex justify-center py-2 text-zinc-500 font-bold`}>Tentang</Link>
-                            </div>
+                        <div className={`my-3`}>
+                            <Link to='/' className={`w-full flex justify-center py-2 text-zinc-500 font-bold`}>Home</Link>
+                            <Link to='/' className={`w-full flex justify-center py-2 text-zinc-500 font-bold`}>Paket Layanan</Link>
+                            <Link to='/' className={`w-full flex justify-center py-2 text-zinc-500 font-bold`}>Tentang</Link>
                         </div>
                     </div>
                 </div>
             </div>
-        </nav>
+        </div>
+        </Fragment>
     );
 }
 
