@@ -1,3 +1,5 @@
+import Button from "../Button/Button";
+
 /* eslint-disable react/prop-types */
 const ServicePackage = (props) => {
     const {children} = props;
@@ -61,11 +63,22 @@ const Superior = () => {
     );
 }
 
+const Custom = () => {
+    return (
+        <div className={`w-full max-w-[414px] mb-16 -mt-3`}>
+            <h1 className={`text-2xl font-semibold`}>Paket Tidak Sesuai?</h1>
+            <p className={`text-sm my-4`}>Tenang kami masih memiliki jalan keluar, Anda dapat membuat paket anda sendiri dengan keinginan anda!</p>
+            <Button paddingResponsive='px-8 py-3'>Buat Paket Custom</Button>
+        </div>
+    )
+} 
+
 ServicePackage.CardService = CardService;
 ServicePackage.ServiceName = ServiceName;
 ServicePackage.Icon = Icon;
 ServicePackage.Description = Description;
 ServicePackage.Price = Price;
 ServicePackage.Superior = Superior;
+ServicePackage.Custom = Custom;
 
 export default ServicePackage;

@@ -32,7 +32,7 @@ const Navbar = (props) => {
             <nav className={`bg-white w-full py-4 px-4 flex justify-between items-center shadow-md shadow-slate-100 fixed z-[6] top-0 md:px-8 lg:px-12`}>
             <div className={`flex items-center gap-x-10`}>
                 {/* logo */}
-                    <Link to='/' className={`font-poppins font-bold mt-1`}>DUDI TKJ SMKN 1 NATAL</Link>
+                    <Link to='/' className={`font-poppins font-bold mt-1`}>DUDI TKJ</Link>
 
                 {/* list nav desktop */}
                 <ul className={`hidden items-center gap-x-3 md:flex`}>
