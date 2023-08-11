@@ -6,8 +6,27 @@ const { v4: uuid } = require('uuid');
 const db = require('../database/db');
 
 router.get('/', (req, res) => {
-    res.send('SELAMAT DATANG');
+    console.log(res.locals.csrfToken, 'homepage');
+    res.render('homepage', { csrfToken: res.locals.csrfToken });
 });
+
+//* dev
+router.get('/login', (req, res) => {
+    console.log(res.locals.csrfToken, 'login');
+    res.render('login', { csrfToken: res.locals.csrfToken });
+});
+
+router.get('/user', (req, res) => {
+    console.log(res.locals.csrfToken, 'login');
+    res.render('user', { csrfToken: res.locals.csrfToken });
+});
+
+router.get('/register', (req, res) => {
+    console.log(res.locals.csrfToken, 'register');
+    res.render('register', { csrfToken: res.locals.csrfToken });
+});
+
+//*close
 
 /**
  * * Method POST
@@ -16,6 +35,12 @@ router.get('/', (req, res) => {
  * * Full Access
  */
 router.post('/register', async (req, res) => {
+    // const secret = req.session.csrfSecret;
+
+    // if (!secret || !token.verify(secret, req.body._csrf)) {
+    //     console.log('token tidak valid REGISTER');
+    //     return res.status(403).send('Token CSRF tidak valid');
+    // }
     const dataRegister = req.body;
     const email = dataRegister.email;
     const name = dataRegister.name;
@@ -83,13 +108,13 @@ router.post('/register', async (req, res) => {
             message: 'user berhasil diinput',
             userId: result.insertedId,
         });
+        res.redirect('/user');
     } catch (error) {
         console.log(`user gagal melakukan pendaftaran ${error}`);
-        res.status(200).send({
+        return res.status(200).send({
             message: error,
         });
     }
-    return;
 });
 
 router.post('/login', async (req, res) => {
