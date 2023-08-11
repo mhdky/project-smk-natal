@@ -6,9 +6,15 @@ const { v4: uuid } = require('uuid');
 const db = require('../database/db');
 
 router.get('/', (req, res) => {
-    res.send('Home');
+    res.send('SELAMAT DATANG');
 });
 
+/**
+ * * Method POST
+ * * URL Login And Register
+ * * Status Public
+ * * Full Access
+ */
 router.post('/register', async (req, res) => {
     const dataRegister = req.body;
     const email = dataRegister.email;
@@ -96,6 +102,12 @@ router.post('/login', async (req, res) => {
         .collection('users')
         .findOne({ email: email });
 
+    if (!users) {
+        return res.status(404).send({
+            message: 'Password atau Email salah',
+        });
+    }
+
     const comparePassword = await bcrypt.compare(
         password + process.env.RANDOM_PASSWORD,
         users.password,
@@ -111,5 +123,116 @@ router.post('/login', async (req, res) => {
         message: 'Password atau Email salah',
     });
 });
+//*close
 
+/**
+ * * Method GET
+ * * URL Admin
+ * * Status Privat
+ * * Access Login
+ */
+
+router.get('/admin', async (req, res) => {
+    const users = await db.getDb().collection('users').find().toArray();
+    res.status(200).send({
+        data: users,
+    });
+});
+
+/**
+ * * Method POST
+ * * URL Admin/Harga
+ * * Status Privat
+ * * Access Login
+ */
+router.post('/admin/harga', async (req, res) => {
+    const hargaData = req.body;
+    const harga = hargaData.harga;
+    const speed = hargaData.speed;
+    const fitur = hargaData.fitur;
+
+    if (!harga || !speed || !fitur) {
+        res.status(404).send({
+            message: 'Form tidak boleh kosong',
+        });
+    } else if (!harga === Number) {
+        res.status(404).send({
+            message: 'Masukkan hanya angka',
+        });
+    }
+    const saveHarga = await db
+        .getDb()
+        .collection('harga')
+        .insertOne({ _id: uuid(), harga: harga, speed: speed, fitur: fitur });
+
+    res.status(200).send({
+        message: 'Berhasil menambahkan harga',
+        info: saveHarga.insertedId,
+    });
+});
+
+/**
+ * * Method GET
+ * * URL Admin/harga/:id
+ * * Status Privat
+ * * Access Login
+ */
+router.get('/admin/harga/:id', async (req, res) => {
+    const dataHarga = await db
+        .getDb()
+        .collection('harga')
+        .findOne({ _id: req.params.id });
+
+    if (dataHarga) {
+        try {
+            return res.status(200).send({
+                data: dataHarga,
+            });
+        } catch (error) {
+            return res.status(404).send({
+                message: 'pesanan tidak ditemukan',
+                error: error,
+            });
+        }
+    }
+    return;
+});
+
+/**
+ * * Method PUT
+ * * URL Admin/harga/:id
+ * * Status Privat
+ * * Access Login
+ */
+
+router.put('/admin/harga/:id', async (req, res) => {
+    const hargaData = req.body;
+    const harga = hargaData.harga;
+    const speed = hargaData.speed;
+    const fitur = hargaData.fitur;
+
+    if (!harga || !speed || !fitur) {
+        res.status(404).send({
+            message: 'Form tidak boleh kosong',
+        });
+    } else if (!harga === Number) {
+        res.status(404).send({
+            message: 'Masukkan hanya angka',
+        });
+    }
+    const saveHarga = await db
+        .getDb()
+        .collection('harga')
+        .updateOne(
+            { _id: req.params.id },
+            { $set: { harga: harga, speed: speed, fitur: fitur } },
+        );
+
+    res.status(200).send({
+        message: 'Berhasil update harga',
+        info: saveHarga.insertedId,
+    });
+});
+
+router.post('/profile:id');
 module.exports = router;
