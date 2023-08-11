@@ -81,6 +81,17 @@ const ContainerAuthInput = (props) => {
     );
 }
 
+const ShowAndHidePassword = (props) => {
+    const {onClick = () => {}, display} = props
+    return (
+        <div onClick={onClick} className={`w-6 h-5 flex justify-center items-center cursor-pointer relative`}>
+            <img src="/img/icon/eye.svg" alt="Icon" className={`w-5`} />
+            <span className={`w-0.5 h-5 bg-white mt-1 ${display} absolute -top-[2px] right-2 -rotate-45`}></span>
+            <span className={`w-[2px] h-5 bg-zinc-400 ${display} absolute -top-[1px] right-2 -rotate-45`}></span>
+        </div>
+    );
+}
+
 const ForgotPassword = (props) => {
     const {children} = props;
     return (
@@ -103,6 +114,7 @@ const AuthAction = (props) => {
 Auth.ContainerAuth = ContainerAuth;
 Auth.AuthLabel = AuthLabel;
 Auth.ContainerAuthInput = ContainerAuthInput;
+Auth.ShowAndHidePassword = ShowAndHidePassword;
 Auth.ForgotPassword = ForgotPassword;
 Auth.AuthAction = AuthAction;
 
