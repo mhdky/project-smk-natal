@@ -8,9 +8,9 @@ const Auth = (props) => {
 
     React.useEffect(() => {
         const typed = new Typed(el.current, {
-        strings: ['Aman', 'Fleksibel', 'Murah'],
-        typeSpeed: 100,
-        loop: true
+            strings: ['Aman', 'Fleksibel', 'Murah'],
+            typeSpeed: 100,
+            loop: true
         });
 
         return () => {
@@ -39,7 +39,7 @@ const Auth = (props) => {
             </div>
             
             {/* form auth */}
-            <form className={`w-full min-h-full lg:w-1/2`}>
+            <form autoComplete="off" className={`w-full min-h-full lg:w-1/2`}>
                 {/* back */}
                 <div onClick={handleBack} className={`bg-white w-full py-3 px-4 flex items-center fixed top-0 border-b border-zinc-300 cursor-pointer`}>
                     <img src="/img/icon/back.svg" alt="Icon" className={`w-8`} />
@@ -82,7 +82,7 @@ const ContainerAuthInput = (props) => {
 }
 
 const ShowAndHidePassword = (props) => {
-    const {onClick = () => {}, display} = props
+    const {onClick = () => {}, display} = props;
     return (
         <div onClick={onClick} className={`w-6 h-5 flex justify-center items-center cursor-pointer relative`}>
             <img src="/img/icon/eye.svg" alt="Icon" className={`w-5`} />

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const Navbar = (props) => {
@@ -27,9 +27,26 @@ const Navbar = (props) => {
         }, 500);
     } 
 
+    const [showShadow, setShowShadow] = useState(false);
+
+    const handleScroll = () => {
+        if (window.scrollY > 200) {
+        setShowShadow(true);
+        } else {
+        setShowShadow(false);
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+        window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
         <Fragment>
-            <nav className={`bg-white w-full py-4 px-4 flex justify-between items-center shadow-md shadow-slate-100 fixed z-[6] top-0 md:px-8 lg:px-12`}>
+            <nav className={`bg-white w-full py-4 px-4 flex justify-between items-center duration-300 ${showShadow ? 'shadow-md shadow-slate-200' : 'shadow-none' } fixed z-[6] top-0 md:px-8 lg:px-12`}>
             <div className={`flex items-center gap-x-10`}>
                 {/* logo */}
                     <Link to='/' className={`font-poppins font-bold mt-1`}>DUDI TKJ</Link>

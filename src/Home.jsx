@@ -58,7 +58,7 @@ const Home = () => {
                 <ServicePackage.Custom></ServicePackage.Custom>
             </Container>
 
-            <Footer></Footer>
+            <Footer />
         </Fragment>
     );
 }
