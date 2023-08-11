@@ -3,7 +3,7 @@ const ChooseUs = (props) => {
     const {children} = props;
     
     return (
-        <div className={`bg-slate-primary w-full px-4 py-12 lg:py-20`}>
+        <div className={`bg-slate-primary w-full px-4 pt-12 pb-14 lg:pt-20 lg:pb-24`}>
             {/* name section */}
             <h1 className={`text-xl text-center font-semibold mb-8 lg:text-3xl lg:mb-14`}>Mengapa Memilih Kami</h1>
 
