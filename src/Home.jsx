@@ -11,9 +11,7 @@ import Footer from "./components/Footer/Footer";
 const Home = () => {
     return (
         <Fragment>
-            <Navbar>
-                <Button paddingResponsive='md:px-5 md:py-2' url='/login'>Login</Button>
-            </Navbar>
+            <Navbar />
 
             <Container padding='px-0 md:px-8 lg:px-12'>
                 <Header />

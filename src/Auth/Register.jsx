@@ -19,6 +19,14 @@ const Register = () => {
     return (
         <Auth>
             <Auth.ContainerAuth>
+                {/* name */}
+                <Auth.AuthLabel>
+                    <Label labelFor='name'>Nama</Label>
+                </Auth.AuthLabel>
+                <Auth.ContainerAuthInput iconUrl='/img/icon/at.svg'>
+                    <Input type='text' name='name' id='name'>Masukan Nama Lengkap Anda</Input>
+                </Auth.ContainerAuthInput>
+
                 {/* email */}
                 <Auth.AuthLabel>
                     <Label labelFor='email'>Email</Label>
