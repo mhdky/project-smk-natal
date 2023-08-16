@@ -15,6 +15,7 @@ const sessionStore = new MongoDBStore({
     uri: process.env.URI_DATABASE,
     databaseName: process.env.NAME_DATABASE,
     Collection: 'session',
+    expires: 60 * 1000,
 });
 
 sessionStore.on('error', (error) => {
@@ -33,23 +34,28 @@ app.use(
         resave: false,
         saveUninitialized: true,
         store: sessionStore,
-        cookie: { secure: true, maxAge: 1000 * 60 * 60 * 24 },
+        cookie: { secure: false, maxAge: 60000, httpOnly: true },
     }),
 );
 /**
  * *Konfigurasi CSRF
  */
-const Tokens = new csrf();
-
+const tokens = new csrf({ saltLength: 8, secretLength: 18 });
 app.use((req, res, next) => {
-    let secret = Tokens.secretSync();
-    let token = Tokens.create(secret);
+    const secret = tokens.secretSync();
+    const token = tokens.create(secret);
+    const user = req.session.user;
+    const isAuth = req.session.isAuthenticated;
 
-    if (!secret || !token) {
+    if (!req.session.csrfToken || !res.locals.csrfToken) {
+        req.session.csrfToken = token;
+        res.locals.csrfToken = secret;
+        console.log(req.session.csrfToken, res.locals.csrfToken);
+    }
+    if (!user || !isAuth) {
         return next();
     }
-    res.locals.csrfToken = token;
-    req.session.csrfSecret = secret;
+    res.locals.isAuth = true;
 
     next();
 });

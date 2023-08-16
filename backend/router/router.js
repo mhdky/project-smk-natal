@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { v4: uuid } = require('uuid');
-
+const csrf = require('csrf');
 const db = require('../database/db');
+
+const tokens = new csrf();
 
 router.get('/', (req, res) => {
     console.log(res.locals.csrfToken, 'homepage');
@@ -11,19 +13,49 @@ router.get('/', (req, res) => {
 });
 
 //* dev
-router.get('/login', (req, res) => {
-    console.log(res.locals.csrfToken, 'login');
-    res.render('login', { csrfToken: res.locals.csrfToken });
+router.get('/login', async (req, res) => {
+    req.session.csrfToken = tokens.secretSync();
+    return res.render('login', {
+        csrfToken: req.session.csrfToken,
+    });
 });
 
 router.get('/user', (req, res) => {
-    console.log(res.locals.csrfToken, 'login');
-    res.render('user', { csrfToken: res.locals.csrfToken });
+    console.log(req.session, req.session.user);
+    if (req.session && req.session.user) {
+        req.session.csrfToken = tokens.secretSync();
+        return res.render('user', {
+            csrfToken: req.session.csrfToken,
+        });
+    }
+    return res.render('404');
 });
 
 router.get('/register', (req, res) => {
-    console.log(res.locals.csrfToken, 'register');
-    res.render('register', { csrfToken: res.locals.csrfToken });
+    let sessionInputData = req.session.InputData;
+
+    if (!sessionInputData) {
+        sessionInputData = {
+            hasError: false,
+            email: '',
+            name: '',
+            whatsapp: '',
+            alamat: '',
+            password: '',
+            confirmPassword: '',
+        };
+    }
+    // req.session.InputData = null;
+    req.session.csrfToken = tokens.secretSync();
+    res.render('register', {
+        InputData: sessionInputData,
+        csrfToken: req.session.csrfToken,
+    });
+});
+
+router.get('/user', (req, res) => {
+    console.log(req.session.csrfToken, 'client');
+    res.render('user', { csrfToken: req.session.csrfToken });
 });
 
 //*close
@@ -35,119 +67,158 @@ router.get('/register', (req, res) => {
  * * Full Access
  */
 router.post('/register', async (req, res) => {
-    // const secret = req.session.csrfSecret;
+    const data_csrf = req.body._csrf;
+    if (!tokens.verify(res.locals.csrfToken, data_csrf)) {
+        const dataRegister = req.body;
+        const email = dataRegister.email;
+        const name = dataRegister.name;
+        const whatsapp = dataRegister.whatsapp;
+        const alamat = dataRegister.alamat;
+        const password = dataRegister.password;
+        const confirmPassword = dataRegister['password'];
 
-    // if (!secret || !token.verify(secret, req.body._csrf)) {
-    //     console.log('token tidak valid REGISTER');
-    //     return res.status(403).send('Token CSRF tidak valid');
-    // }
-    const dataRegister = req.body;
-    const email = dataRegister.email;
-    const name = dataRegister.name;
-    const whatsapp = dataRegister.whatsapp;
-    const alamat = dataRegister.alamat;
-    const password = dataRegister.password;
-    const confirmPassword = dataRegister['password'];
+        console.log(whatsapp === Number);
 
-    console.log(whatsapp === Number);
+        if (
+            !email ||
+            !name ||
+            !whatsapp ||
+            !alamat ||
+            !password ||
+            !confirmPassword
+        ) {
+            return res.status(404).send({
+                message: 'form kosong',
+            });
+        } else if (password != confirmPassword) {
+            return res.status(404).send({
+                message: 'Password tidak sama',
+            });
+        } else if (password.length < 6) {
+            return res.status(404).send({
+                message: 'password kurang dari 6 karakter',
+            });
+        } else if (isNaN(whatsapp)) {
+            return res.status(404).send({
+                message: 'Masukkan No whatsapp hanya angka',
+            });
+        } else if (!email.includes('@')) {
+            return res.status(404).send({
+                message: 'Email tidak valid',
+            });
+        }
 
-    if (
-        !email ||
-        !name ||
-        !whatsapp ||
-        !alamat ||
-        !password ||
-        !confirmPassword
-    ) {
-        return res.status(404).send({
-            message: 'form kosong',
+        const hashedPassword = await bcrypt.genSalt(10).then((salt) => {
+            return bcrypt.hash(password + process.env.RANDOM_PASSWORD, salt);
         });
-    } else if (password != confirmPassword) {
-        return res.status(404).send({
-            message: 'Password tidak sama',
-        });
-    } else if (password.length < 6) {
-        return res.status(404).send({
-            message: 'password kurang dari 6 karakter',
-        });
-    } else if (whatsapp === Number) {
-        return res.status(404).send({
-            message: 'Masukkan No whatsapp hanya angka',
-        });
-    } else if (!email.includes('@')) {
-        return res.status(404).send({
-            message: 'Email tidak valid',
-        });
-    }
 
-    const hashPassword = await bcrypt.genSalt(10).then((salt) => {
-        return bcrypt.hash(confirmPassword + process.env.RANDOM_PASSWORD, salt);
-    });
+        const users = await db
+            .getDb()
+            .collection('users')
+            .findOne({ email: email });
 
-    const users = await db
-        .getDb()
-        .collection('users')
-        .findOne({ email: email });
+        if (users) {
+            return res.status(404).send({
+                message: 'email sudah terdaftar',
+            });
+        }
 
-    if (users) {
-        return res.status(404).send({
-            message: 'email sudah terdaftar',
-        });
-    }
-    try {
-        const result = await db.getDb().collection('users').insertOne({
+        const user = {
             _id: uuid(),
             email: email,
             name: name,
             whatsapp: whatsapp,
             alamat: alamat,
-            password: hashPassword,
+            password: hashedPassword,
+            isAdmin: false,
             date: new Date(),
-        });
-        res.status(200).send({
-            message: 'user berhasil diinput',
-            userId: result.insertedId,
-        });
-        res.redirect('/user');
-    } catch (error) {
-        console.log(`user gagal melakukan pendaftaran ${error}`);
-        return res.status(200).send({
-            message: error,
-        });
+        };
+
+        try {
+            const result = await db.getDb().collection('users').insertOne(user);
+            // res.status(200).send({
+            //     message: 'User berhasil terdaftar',
+            //     data: result.insertedId,
+            // });
+
+            res.redirect('/login');
+        } catch (error) {
+            console.log(`user gagal melakukan pendaftaran ${error}`);
+            return res.status(200).send({
+                message: error,
+            });
+        }
+    } else {
+        console.log('Token yang diharapkan:', res.locals.csrfToken);
+        console.log('Token yang diterima:', data_csrf);
+        console.log('token tidak valid, Register');
+        console.log('token tidak valid, Register');
+        res.render('404');
     }
 });
 
 router.post('/login', async (req, res) => {
-    const userData = req.body;
-    const email = userData.email;
-    const password = userData.password;
+    const data_csrf = req.body._csrf;
+    if (!tokens.verify(res.locals.csrfToken, data_csrf)) {
+        const userData = req.body;
+        const email = userData.email;
+        const password = userData.password;
 
-    const users = await db
-        .getDb()
-        .collection('users')
-        .findOne({ email: email });
+        const users = await db
+            .getDb()
+            .collection('users')
+            .findOne({ email: email });
 
-    if (!users) {
-        return res.status(404).send({
-            message: 'Password atau Email salah',
-        });
+        // console.log(users);
+
+        if (!users) {
+            // return res.status(404).send({
+            //     message: ' Email salah',
+            // });
+            console.log('email tidak terdaftar');
+            return res.redirect('/login');
+        }
+
+        const functionComparePassword = async () => {
+            const isMatch = await bcrypt.compare(
+                password + process.env.RANDOM_PASSWORD,
+                users.password,
+            );
+
+            if (isMatch) {
+                // return res.status(200).send({
+                //     message: 'User berhasil login',
+                //     userId: users.insertedId,
+                // });
+                console.log('Token yang diharapkan:', res.locals.csrfToken);
+                console.log('Token yang diterima:', data_csrf);
+                req.session.user = {
+                    id: users._id,
+                    email: users.email,
+                    isAdmin: users.isAdmin,
+                };
+                req.session.isAuthenticated = true;
+                return req.session.save(() => {
+                    res.redirect('/user');
+                });
+                // req.redirect('/user');
+            } else {
+                // return res.status(404).send({
+                //     message: 'Password atau Email salah',
+                // });
+                console.log('password salah');
+                res.redirect('/login');
+            }
+        };
+        return functionComparePassword();
+    } else {
+        console.log('Token yang diharapkan:', res.locals.csrfToken);
+        console.log('Token yang diterima:', data_csrf);
+        console.log('token tidak valid, Register');
+        res.render('404');
     }
-
-    const comparePassword = await bcrypt.compare(
-        password + process.env.RANDOM_PASSWORD,
-        users.password,
-    );
-
-    if (comparePassword) {
-        return res.status(200).send({
-            message: 'User berhasil login',
-            userId: users.insertedId,
-        });
-    }
-    return res.status(404).send({
-        message: 'Password atau Email salah',
-    });
 });
+
 //*close
 
 /**
